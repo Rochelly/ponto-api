@@ -1,0 +1,18 @@
+{
+    "name": "ponto-api",
+    "version": "1.0.0",
+    "description": "API para acesso aos dados do sistema de pontos da Secullum",
+    "author": "Estêvão Samuel Procópio Amaral <estevao@ufvjm.edu.br>",
+    "repository": {
+	"type": "git",
+	"url": "https://github.com/noc-ufvjm/ponto-api.git"
+    },
+    "bugs": {
+	"url": "https://github.com/noc-ufvjm/ponto-api/issues"
+    },
+    "dependencies": {
+	"express": "4.x.x",
+	"tedious": "*"
+    },
+    "license": "GPLv2"
+}
