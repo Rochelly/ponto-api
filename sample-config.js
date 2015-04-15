@@ -5,6 +5,10 @@ module.exports = {
 	password: 'password',
 	database: 'database',
     },
-    api_host: 'localhost',
-    api_port: 8080,
+    api: {
+	host: 'localhost',
+	port: 8080,
+	cipher: 'aes-128-cbc',
+	key: '1234567890123456',
+	iv: '6543210987654321',
 };
