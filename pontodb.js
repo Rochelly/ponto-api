@@ -47,26 +47,6 @@ function mssql_min_to_time2(min) {
     return str;
 }
 
-function mssql_query(sql, callback) {
-    var rows = [];
-
-    req = new tedious.Request(sql, function (err, count) {
-	if (err) return callback(err);
-	callback(null, rows);
-    });
-
-    req.on('row', function (cols) {
-	var row = {};
-	for (var i = 0; i < cols.length; i++) {
-	    row[cols[i].metadata.colName] = cols[i].value;
-	}
-
-	rows.push(row);
-    });
-
-    conn.execSql(req);
-}
-
 module.exports = {
     connect: function (callback) {
 	conn = new tedious.Connection(config.db);
@@ -85,10 +65,31 @@ module.exports = {
 	conn.close();
     },
 
-    servidor: function (siape, callback) {
+    query: function (sql, callback) {
 	var rows = [];
 
-	req = new tedious.Request("select n_folha as siape, nome from funcionarios where n_folha = '" + siape + "'", function (err, count) {
+	req = new tedious.Request(sql, function (err, count) {
+	    if (err) return callback(err);
+	    callback(null, rows);
+	});
+
+	req.on('row', function (cols) {
+	    var row = {};
+	    for (var i = 0; i < cols.length; i++) {
+		row[cols[i].metadata.colName] = cols[i].value;
+	    }
+
+	    rows.push(row);
+	});
+
+	conn.execSql(req);
+    },
+
+    servidor: function (siape, callback) {
+	var rows = [];
+req = new tedious.Request("select f.n_folha as siape, f.nome, d.descricao from funcionarios as f  JOIN departamentos as d on f.departamento_id=d.id  where n_folha = '" + siape + "'", function (err, count) {
+	
+	//req = new tedious.Request("select f.n_folha as siape, f.nome from funcionarios as f JOIN where ( n_folha = '" + siape + "')", function (err, count) {
 	    if (err) return callback(err);
 
 	    //console.log('req finish');
@@ -181,7 +182,7 @@ module.exports = {
 
 	var sql = "select *, " + mssql_min_to_time('minutos_trabalhados') + " as horas_trabalhadas, " + mssql_min_to_time('saldo_minutos') + " as saldo from consulta_batidas where siape = '" + siape + "' and bdata like '%/" + str_mes + "/" + ano.toString() + "'";
 
-	//console.log(sql);
+	console.log(sql);
 	req = new tedious.Request(sql,
 				  function (err, count) {
 	    if (err) return callback(err);
@@ -240,7 +241,7 @@ module.exports = {
     ultima_atualizacao: function (callback) {
 	var ultima_atualizacao = "select CONVERT(nvarchar(10), ultima_execucao, 103) + ' ' + hora as ultima_atualizacao, id, tarefa, data, hora, resultado_execucao, ultima_execucao, lido from agenda_comunicacao where receber_registros = 'true' and ultima_execucao is not null and resultado_execucao = 'OK' order by ultima_execucao desc, hora desc";
 
-	mssql_query(ultima_atualizacao, function (err, rows) {
+	this.query(ultima_atualizacao, function (err, rows) {
 	    if (err) return callback(err);
 	    callback(null, rows[0]);
 	});
