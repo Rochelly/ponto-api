@@ -1,6 +1,5 @@
 var express = require('express');
 var crypto = require('crypto');
-
 var pontodb = require('./pontodb.js');
 var config = require('./config.js');
 
@@ -70,7 +69,7 @@ router.get('/legendas/:id/:mes/:ano', function(req, res) {
 		if (err)
 			res.json(err);
 		else
-	res.json(rows);
+			res.json(rows);
 	//res.json({	result: encrypt(rows)	});
 });
 });
@@ -88,8 +87,6 @@ router.get('/departamento/:id/:mes/:ano', function(req, res) {
 	});
 });
 });
-
-
 //-------------------------Horarios dos servidor--------------------------------
 
 router.get('/horarios/:id', function(req, res) {
@@ -99,7 +96,7 @@ router.get('/horarios/:id', function(req, res) {
 		else
 			res.json(rows);
 			//res.json({result: encrypt(rows)	});
-	});
+		});
 });
 
 //--------------------------Verifica se e um chefe------------------------------
@@ -110,7 +107,7 @@ router.get('/chefia/:usuario', function(req, res) {
 			res.json(err);
 		else
 			//res.json(rows);
-			res.json({result: encrypt(rows)	});
+		res.json({result: encrypt(rows)	});
 	});
 });
 
@@ -122,16 +119,30 @@ router.get('/chefiaDados/:usuario', function(req, res) {
 			res.json(err);
 		else{
 		//	console.log(rows);
-						res.json(rows);
-			res.json({result: encrypt(rows)	});
+		//				res.json(rows);
+		res.json({result: encrypt(rows)	});
 
-		}
-		
-			
-	});
+	}
+
+
 });
+});
+//----------------------------Lista de Funcionarios por Departamento-----------------------------------
+
+router.get('/funcionariosDep/:Departamento', function(req, res) {
+	pontodb.funcionariosDep(req.params.Departamento, function(err, rows) {
+		if (err)
+			res.json(err);
+		else{
+		//	console.log(rows);
+		//				res.json(rows);
+		res.json({result: encrypt(rows)	});
+
+	}
 
 
+});
+});
 //-----------------------------Ocorrecias Por Setor e  por  pessoa -----------------------------
 
 router.get('/ocorrencias/:mes/:ano/:departamento/:siape', function(req, res) {
@@ -141,16 +152,50 @@ router.get('/ocorrencias/:mes/:ano/:departamento/:siape', function(req, res) {
 			res.json(err);
 		}
 		else
-			{
+		{
 			//console.log(rows);
 			res.json({result: encrypt(rows)	});
-			//res.json(rows);
-		}
-			
-	});
-});
+		//	res.json(rows);
+	}
 
+});
+});
+//-----------------------------Dias Trabalhandos e Nao  trabalhos por pessoa -----------------------------
+
+router.get('/diasTrabalhados/:mes/:ano/:departamento/:siape', function(req, res) {
+	pontodb.diasTrabalhados(req.params.mes,req.params.ano,req.params.departamento,req.params.siape, function(err, rows) {
+		if (err){
+			console.log('ERRO!')
+			res.json(err);
+		}
+		else
+		{
+			//console.log(rows);
+			res.json({result: encrypt(rows)	});
+		//res.json(rows);
+	}
+
+});
+});
+//-----------------------------Dias de Ocorrecias por  pessoa -----------------------------
+
+router.get('/diasOcorrencias/:mes/:ano/:departamento/:siape/:ocorrencia', function(req, res) {
+	pontodb.diasOcorrencias(req.params.mes,req.params.ano,req.params.departamento,req.params.siape,req.params.ocorrencia, function(err, rows) {
+		if (err){
+			console.log('ERRO!')
+			res.json(err);
+		}
+		else
+		{
+			console.log(rows);
+			res.json({result: encrypt(rows)	});
+		//	res.json(rows);
+	}
+
+});
+});
 //-------------------------------------------------------------------------------
+
 app.use('/api', router);
 
 pontodb.connect(function(err) {

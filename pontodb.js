@@ -152,13 +152,10 @@ chefia: function (usuario, callback) {
 
 chefiaDados: function (usuario, callback) {
 	var rows = [];
-//var consulta ="SELECT COUNT (u.id) as chefia from  usuarios as u  INNER JOIN usuarios_departamentos as ud  on u.id=ud.usuario_id  where u.nome ='"+usuario+"'";
-//var consulta ="SELECT usuarios_departamentos.usuario_id, usuarios.nome,usuarios_departamentos.departamento_id,departamentos.descricao FROM usuarios INNER JOIN usuarios_departamentos ON usuarios.id = usuarios_departamentos.usuario_id INNER JOIN departamentos ON usuarios_departamentos.departamento_id = departamentos.id where usuarios.nome =";
-	
- var consulta ="SELECT usuarios_departamentos.usuario_id, usuarios.nome,usuarios_departamentos.departamento_id,departamentos.descricao FROM usuarios INNER JOIN usuarios_departamentos ON usuarios.id = usuarios_departamentos.usuario_id INNER JOIN departamentos ON usuarios_departamentos.departamento_id = departamentos.id where usuarios.nome = '"+usuario+"'";
+	var sql ="SELECT usuarios_departamentos.usuario_id, usuarios.nome,usuarios_departamentos.departamento_id,departamentos.descricao FROM usuarios INNER JOIN usuarios_departamentos ON usuarios.id = usuarios_departamentos.usuario_id INNER JOIN departamentos ON usuarios_departamentos.departamento_id = departamentos.id where usuarios.nome = '"+usuario+"'";
 
 
-	req = new tedious.Request(consulta, function (err, count) {
+	req = new tedious.Request(sql, function (err, count) {
 		if (err) return callback(err);
 		callback(null, rows[0]);
 	});
@@ -175,6 +172,29 @@ chefiaDados: function (usuario, callback) {
 	conn.execSql(req);
 },
 
+funcionariosDep: function (Departamento, callback) {
+	var rows = [];
+	var sql= "SELECT n_folha, nome from funcionarios WHERE departamento_id = '"+Departamento+"' ORDER by nome";
+	
+	req = new tedious.Request(sql,
+		function (err, count) {
+			if (err) return callback(err);
+
+	    //console.log('req finish');
+	    callback(null, rows);
+	});
+
+	req.on('row', function (cols) {
+		var row = {};
+		for (var i = 0; i < cols.length; i++) {
+			row[cols[i].metadata.colName] = cols[i].value;
+		}
+
+		rows.push(row);
+	});
+
+	conn.execSql(req);
+},
 
 departamento: function (dep, mes, ano, callback) {
 	var rows = [];
@@ -195,7 +215,7 @@ departamento: function (dep, mes, ano, callback) {
 	    callback(null, rows[0]);
 	});
 
-	req.on('row', function (cols) {
+	req.on('row', function (cols) { 
 		var row = {};
 		for (var i = 0; i < cols.length; i++) {
 			row[cols[i].metadata.colName] = cols[i].value;
@@ -207,16 +227,14 @@ departamento: function (dep, mes, ano, callback) {
 	conn.execSql(req);
 },
 
-
-
 ocorrencias: function ( mes, ano,dep,siape,callback) {
 	var rows = [];
 	var str_mes = (mes < 10) ? '0' + mes : mes.toString();
 	var days = new Date(ano, mes, 0).getUTCDate();
 
-	var sql ="SELECT c1.nome,c1.siape, c1.entrada2 as ocorrencia, c1.departamento,j.descricao, COUNT (*) as  quantidade from (SELECT f.departamento_id as departamento,f.id,f.n_folha as siape, f.nome,b.entrada2, b.data from funcionarios f INNER JOIN batidas b on f.id = b.funcionario_id where  ( entrada2 LIKE '*%')  and (b.data  between '"+ano.toString()+str_mes+"01' and '"+ano.toString()+str_mes+days.toString()+"' )) as c1  JOIN justificativas j  on  c1.entrada2 = j.nome  where   c1.departamento ="+dep+" and siape = '"+siape+"' GROUP BY c1.nome, c1.entrada2,c1.siape, c1.departamento ,j.descricao";
 
-
+	var  sql = "select c2.nome, c2.siape, c2.departamento ,c2.descricao, c2.ocorrencia, COUNT (*) as quantidade from ( SELECT c1.nome, c1.siape, c1.departamento, j.descricao, c1.ocorrencia, c1.data  from (    SELECT    f.departamento_id as departamento,    f.id,    f.n_folha as siape,   f.nome,    b.entrada2,   b.data,   case when entrada1 LIKE '*%' then entrada1 when saida1 LIKE '*%' then saida1 when entrada2 LIKE '*%' then entrada2 when entrada3 LIKE '*%' then entrada3 when saida3 LIKE '*%' then saida3 else null end as ocorrencia   from funcionarios f   INNER JOIN batidas b on f.id = b.funcionario_id   where (b.data between '"+ano+str_mes+"01' and '"+ano+str_mes+days+"' ) and f.departamento_id = "+dep+" and f.n_folha  ='"+siape+"')as c1 JOIN justificativas j on c1.entrada2 = j.nome where not c1.ocorrencia is null ) as c2 GROUP BY c2.nome, c2.siape, c2.departamento ,c2.descricao, c2.ocorrencia ";
+	
 	req = new tedious.Request(sql,
 		function (err, count) {
 			if (err) return callback(err);
@@ -236,6 +254,60 @@ ocorrencias: function ( mes, ano,dep,siape,callback) {
 
 	conn.execSql(req);
 },
+
+diasTrabalhados: function ( mes, ano,dep,siape,callback) {
+	var rows = [];
+	var str_mes = (mes < 10) ? '0' + mes : mes.toString();
+	var days = new Date(ano, mes, 0).getUTCDate();
+	var  sql = "select c3.siape, SUM (quantidade) as naotrabalhados, ("+days+" - SUM (quantidade)) as trabalhados from ( select c2.siape, COUNT (*) as quantidade from ( SELECT c1.nome, c1.siape, c1.departamento, j.descricao, c1.ocorrencia, c1.data from ( SELECT f.departamento_id as departamento, f.id, f.n_folha as siape, f.nome, b.entrada2, b.data, case when entrada1 LIKE '*%' then entrada1 when saida1 LIKE '*%' then saida1 when entrada2 LIKE '*%' then entrada2 when entrada3 LIKE '*%' then entrada3 when saida3 LIKE '*%' then saida3 else null end as ocorrencia from funcionarios f INNER JOIN batidas b on f.id = b.funcionario_id where (b.data between '"+ano+str_mes+"01' and '"+ano+str_mes+days+"' ) and f.departamento_id = "+dep+" and f.n_folha  ='"+siape+"')as c1 JOIN justificativas j on c1.entrada2 = j.nome where not c1.ocorrencia is null ) as c2 GROUP BY c2.nome, c2.siape, c2.departamento ,c2.descricao, c2.ocorrencia) as c3 GROUP BY c3.siape ";
+	
+	req = new tedious.Request(sql,
+		function (err, count) {
+			if (err) return callback(err);
+	    callback(null, rows);
+	});
+
+	req.on('row', function (cols) {
+		var row = {};
+		for (var i = 0; i < cols.length; i++) {
+			row[cols[i].metadata.colName] = cols[i].value;
+		}
+		rows.push(row);
+	});
+
+	conn.execSql(req);
+},
+
+diasOcorrencias: function ( mes, ano,dep,siape,ocorrencia,callback) {
+	var rows = [];
+	var str_mes = (mes < 10) ? '0' + mes : mes.toString();
+	var days = new Date(ano, mes, 0).getUTCDate();
+
+
+ var sql  = "SELECT day(c1.data) as dia   from   (SELECT      f.departamento_id as departamento, f.id, f.n_folha as siape, f.nome, b.entrada2,b.data,case when entrada1 LIKE '*%' then entrada1 when saida1 LIKE '*%' then saida1 when entrada2 LIKE '*%' then entrada2 when entrada3 LIKE '*%' then entrada3 when saida3 LIKE '*%' then saida3 else null end as ocorrencia from funcionarios f INNER JOIN batidas b on f.id = b.funcionario_id where (b.data between '"+ano+str_mes+"01' and '"+ano+str_mes+days+"' ) and f.departamento_id = "+dep+" and f.n_folha  ='"+siape+"')as c1   JOIN justificativas j on c1.entrada2 = j.nome   where not c1.ocorrencia is null and c1.ocorrencia = '"+ocorrencia+"'";
+
+	//var  sql = "select c2.nome, c2.siape, c2.departamento ,c2.descricao, c2.ocorrencia, COUNT (*) as quantidade from ( SELECT c1.nome, c1.siape, c1.departamento, j.descricao, c1.ocorrencia, c1.data  from (    SELECT    f.departamento_id as departamento,    f.id,    f.n_folha as siape,   f.nome,    b.entrada2,   b.data,   case when entrada1 LIKE '*%' then entrada1 when saida1 LIKE '*%' then saida1 when entrada2 LIKE '*%' then entrada2 else null end as ocorrencia   from funcionarios f   INNER JOIN batidas b on f.id = b.funcionario_id   where (b.data between '"+ano+str_mes+"01' and '"+ano+str_mes+days+"' ) and f.departamento_id = "+dep+" and f.n_folha  ='"+siape+"')as c1 JOIN justificativas j on c1.entrada2 = j.nome where not c1.ocorrencia is null ) as c2 GROUP BY c2.nome, c2.siape, c2.departamento ,c2.descricao, c2.ocorrencia ";
+	
+	req = new tedious.Request(sql,
+		function (err, count) {
+			if (err) return callback(err);
+
+	    //console.log('req finish');
+	    callback(null, rows);
+	});
+
+	req.on('row', function (cols) {
+		var row = {};
+		for (var i = 0; i < cols.length; i++) {
+			row[cols[i].metadata.colName] = cols[i].value;
+		}
+
+		rows.push(row);
+	});
+
+	conn.execSql(req);
+},
+
 sumario: function (siape, mes, ano, callback) {
 	var str_mes = (mes < 10) ? '0' + mes : mes.toString();
 
