@@ -89,13 +89,13 @@ router.get('/departamento/:id/:mes/:ano', function(req, res) {
 });
 //-------------------------Horarios dos servidor--------------------------------
 
-router.get('/horarios/:id', function(req, res) {
-	pontodb.horarios(req.params.id, function(err, rows) {
+router.get('/horarios/:siape', function(req, res) {
+	pontodb.horarios(req.params.siape, function(err, rows) {
 		if (err)
 			res.json(err);
 		else
-			res.json(rows);
-			//res.json({result: encrypt(rows)	});
+			//res.json(rows);
+			res.json({result: encrypt(rows)	});
 		});
 });
 

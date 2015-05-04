@@ -111,10 +111,12 @@ servidor: function (siape, callback) {
 
 horarios: function (siape, callback) {
 	var rows = [];
-	var consulta ="SELECT dia_semana, h.entrada1, h.saida1, h.entrada2, h.saida2, h.entrada3, h.saida3 from horarios as  h INNER JOIN  funcionarios as  f on f.horario_num = h.numero where f.n_folha ='" + siape + "'";
-	req = new tedious.Request(consulta, function (err, count) {
-		if (err) return callback(err);
-		callback(null, rows[0]);
+	var sql ="SELECT  h.dia_semana, h.entrada1, h.saida1, h.entrada2, h.saida2, h.entrada3, h.saida3 from  funcionarios f  INNER JOIN horarios h on f.horario_num = h.numero where f.n_folha ='"+siape+"'";
+
+	req = new tedious.Request(sql,
+		function (err, count) {
+			if (err) return callback(err);
+	    callback(null, rows);
 	});
 
 	req.on('row', function (cols) {
@@ -122,9 +124,9 @@ horarios: function (siape, callback) {
 		for (var i = 0; i < cols.length; i++) {
 			row[cols[i].metadata.colName] = cols[i].value;
 		}
+
 		rows.push(row);
 	});
-
 
 	conn.execSql(req);
 },
@@ -264,8 +266,8 @@ diasTrabalhados: function ( mes, ano,dep,siape,callback) {
 	req = new tedious.Request(sql,
 		function (err, count) {
 			if (err) return callback(err);
-	    callback(null, rows);
-	});
+			callback(null, rows);
+		});
 
 	req.on('row', function (cols) {
 		var row = {};
@@ -284,7 +286,7 @@ diasOcorrencias: function ( mes, ano,dep,siape,ocorrencia,callback) {
 	var days = new Date(ano, mes, 0).getUTCDate();
 
 
- var sql  = "SELECT day(c1.data) as dia   from   (SELECT      f.departamento_id as departamento, f.id, f.n_folha as siape, f.nome, b.entrada2,b.data,case when entrada1 LIKE '*%' then entrada1 when saida1 LIKE '*%' then saida1 when entrada2 LIKE '*%' then entrada2 when entrada3 LIKE '*%' then entrada3 when saida3 LIKE '*%' then saida3 else null end as ocorrencia from funcionarios f INNER JOIN batidas b on f.id = b.funcionario_id where (b.data between '"+ano+str_mes+"01' and '"+ano+str_mes+days+"' ) and f.departamento_id = "+dep+" and f.n_folha  ='"+siape+"')as c1   JOIN justificativas j on c1.entrada2 = j.nome   where not c1.ocorrencia is null and c1.ocorrencia = '"+ocorrencia+"'";
+	var sql  = "SELECT day(c1.data) as dia   from   (SELECT      f.departamento_id as departamento, f.id, f.n_folha as siape, f.nome, b.entrada2,b.data,case when entrada1 LIKE '*%' then entrada1 when saida1 LIKE '*%' then saida1 when entrada2 LIKE '*%' then entrada2 when entrada3 LIKE '*%' then entrada3 when saida3 LIKE '*%' then saida3 else null end as ocorrencia from funcionarios f INNER JOIN batidas b on f.id = b.funcionario_id where (b.data between '"+ano+str_mes+"01' and '"+ano+str_mes+days+"' ) and f.departamento_id = "+dep+" and f.n_folha  ='"+siape+"')as c1   JOIN justificativas j on c1.entrada2 = j.nome   where not c1.ocorrencia is null and c1.ocorrencia = '"+ocorrencia+"'";
 
 	//var  sql = "select c2.nome, c2.siape, c2.departamento ,c2.descricao, c2.ocorrencia, COUNT (*) as quantidade from ( SELECT c1.nome, c1.siape, c1.departamento, j.descricao, c1.ocorrencia, c1.data  from (    SELECT    f.departamento_id as departamento,    f.id,    f.n_folha as siape,   f.nome,    b.entrada2,   b.data,   case when entrada1 LIKE '*%' then entrada1 when saida1 LIKE '*%' then saida1 when entrada2 LIKE '*%' then entrada2 else null end as ocorrencia   from funcionarios f   INNER JOIN batidas b on f.id = b.funcionario_id   where (b.data between '"+ano+str_mes+"01' and '"+ano+str_mes+days+"' ) and f.departamento_id = "+dep+" and f.n_folha  ='"+siape+"')as c1 JOIN justificativas j on c1.entrada2 = j.nome where not c1.ocorrencia is null ) as c2 GROUP BY c2.nome, c2.siape, c2.departamento ,c2.descricao, c2.ocorrencia ";
 	
