@@ -374,6 +374,33 @@ pontos: function (siape, mes, ano, callback) {
 	conn.execSql(req);
 },
 
+feriados: function (mes, ano, callback) {
+	var rows = [];
+
+	var str_mes = (mes < 10) ? '0' + mes : mes.toString();
+
+	var sql = "select id, CONVERT(varchar, data, 103) as data, descricao from feriados where CONVERT(varchar, data, 103) like '%/" + str_mes + '/' + ano + "'";
+
+	req = new tedious.Request(sql,
+		function (err, count) {
+			if (err) return callback(err);
+
+	    //console.log('req finish');
+	    callback(null, rows);
+	});
+
+	req.on('row', function (cols) {
+		var row = {};
+		for (var i = 0; i < cols.length; i++) {
+			row[cols[i].metadata.colName] = cols[i].value;
+		}
+
+		rows.push(row);
+	});
+
+	conn.execSql(req);
+},
+
 legendas: function (siape, mes, ano, callback) {
 	var rows = [];
 
