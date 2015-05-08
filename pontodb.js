@@ -133,11 +133,14 @@ horarios: function (siape, callback) {
 
 chefia: function (usuario, callback) {
 	var rows = [];
-	var consulta ="SELECT COUNT (u.id) as chefia from  usuarios as u  INNER JOIN usuarios_departamentos as ud  on u.id=ud.usuario_id  where u.nome ='"+usuario+"'";
+//	var sql ="SELECT COUNT (u.id) as chefia from  usuarios as u  INNER JOIN usuarios_departamentos as ud  on u.id=ud.usuario_id  where u.nome ='"+usuario+"'";
+
+	var sql ="SELECT u.nome, d.id as departamento_id, d.descricao  FROM usuarios u INNER JOIN usuarios_departamentos ud on u.id = ud.usuario_id INNER JOIN departamentos d on ud.departamento_id = d.id  where u.nome LIKE '%"+usuario+"%' and u.desativado = 'FALSE' and u.bloqueado = 'FALSE'";
 	
-	req = new tedious.Request(consulta, function (err, count) {
-		if (err) return callback(err);
-		callback(null, rows[0]);
+		req = new tedious.Request(sql,
+		function (err, count) {
+			if (err) return callback(err);
+	    callback(null, rows);
 	});
 
 	req.on('row', function (cols) {
@@ -145,9 +148,9 @@ chefia: function (usuario, callback) {
 		for (var i = 0; i < cols.length; i++) {
 			row[cols[i].metadata.colName] = cols[i].value;
 		}
+
 		rows.push(row);
 	});
-
 
 	conn.execSql(req);
 },
@@ -209,6 +212,33 @@ departamento: function (dep, mes, ano, callback) {
 	var sumario_funcs_dep = "select siape, nome, '01/" + str_mes + "/" + ano + " a " + days + "/" + str_mes + "/" + ano + "' as periodo, " + mssql_min_to_time('SUM(saldo_minutos)') + " as saldo, " + mssql_min_to_time2('SUM(minutos_trabalhados)') + " as horas_trabalhadas, " + mssql_min_to_time2("SUM(CASE WHEN " + mssql_weekday_from_str('bdata') + " > 1 AND " + mssql_weekday_from_str('bdata') + " < 7 THEN carga_horaria_minutos ELSE 0 END)") + " as carga_horaria  from consulta_batidas where siape in (" + funcs_dep_filtro + ") and bdata like '%/" + str_mes + "/" + ano.toString() + "' group by siape, nome";
 
 	var sql = sumario_funcs_dep;
+
+	req = new tedious.Request(sql, function (err, count) {
+		if (err) return callback(err);
+
+	    //console.log('req finish');
+	    callback(null, rows[0]);
+	});
+
+	req.on('row', function (cols) { 
+		var row = {};
+		for (var i = 0; i < cols.length; i++) {
+			row[cols[i].metadata.colName] = cols[i].value;
+		}
+
+		rows.push(row);
+	});
+
+	conn.execSql(req);
+},
+
+
+terceiraEntrada: function (siape, mes, ano, callback) {
+	var rows = [];
+
+	var str_mes = (mes < 10) ? '0' + mes : mes.toString();
+	var days = new Date(ano, mes, 0).getUTCDate();
+	var sql = "SELECT COUNT(*) as quantidade   FROM funcionarios f INNER JOIN batidas b on f.id = b.funcionario_id where b.entrada3 is not null and f.n_folha = '"+siape+"' and  (b.data between '"+ano+str_mes+"01' and '"+ano+str_mes+days+"' )"
 
 	req = new tedious.Request(sql, function (err, count) {
 		if (err) return callback(err);

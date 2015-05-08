@@ -108,6 +108,24 @@
             });
     });
 
+    //-------------------------Verifica a Existencia de terceira entrada e retorna a quantidade --------------------------------
+    router.get('/terceiraentrada/:id/:mes/:ano', function(req, res) {
+        console.log(req.params.id, req.params.mes, req.params.ano);
+
+        pontodb.terceiraEntrada(req.params.id, req.params.mes, req.params.ano, function(err, rows) {
+            if (err)
+                res.json(err);
+            else
+
+
+                console.log("aqui");
+       //   res.json(rows);
+         
+       res.json({           result: encrypt(rows)        });
+    });
+    });
+
+
     //--------------------------Verifica se e um chefe------------------------------
     router.get('/chefia/:usuario', function(req, res) {
         pontodb.chefia(req.params.usuario, function(err, rows) {
