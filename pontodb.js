@@ -133,8 +133,6 @@ horarios: function (siape, callback) {
 
 chefia: function (usuario, callback) {
 	var rows = [];
-//	var sql ="SELECT COUNT (u.id) as chefia from  usuarios as u  INNER JOIN usuarios_departamentos as ud  on u.id=ud.usuario_id  where u.nome ='"+usuario+"'";
-
 	var sql ="SELECT u.nome, d.id as departamento_id, d.descricao  FROM usuarios u INNER JOIN usuarios_departamentos ud on u.id = ud.usuario_id INNER JOIN departamentos d on ud.departamento_id = d.id  where u.nome LIKE '%"+usuario+"%' and u.desativado = 'FALSE' and u.bloqueado = 'FALSE'";
 	
 		req = new tedious.Request(sql,
@@ -435,7 +433,6 @@ legendas: function (siape, mes, ano, callback) {
 	var rows = [];
 
 	var str_mes = (mes < 10) ? '0' + mes : mes.toString();
-
 	var pontos = []
 	pontos.push("select distinct substring(bentrada1, 2, LEN(bentrada1)) from consulta_batidas where siape = '" + siape + "' and bdata like '%/" + str_mes + "/" + ano.toString() + "'");
 	pontos.push("select distinct substring(bsaida1, 2, len(bsaida1)) from consulta_batidas where siape = '" + siape + "' and bdata like '%/" + str_mes + "/" + ano.toString() + "'");
@@ -444,7 +441,7 @@ legendas: function (siape, mes, ano, callback) {
 
 	var sql = "select substring(nome, 2, LEN(nome)) as nome, descricao from justificativas where substring(nome, 2, LEN(nome)) in (" + pontos.join(' UNION ') + ")";
 
-	//console.log(servidor);
+
 
 	req = new tedious.Request(sql,
 		function (err, count) {

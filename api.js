@@ -18,9 +18,7 @@
             if (err)
                 res.json(err);
             else
-            // res.json(rows);
-        res.json({
-            result: encrypt(rows)
+                res.json({ result: encrypt(rows)
         });
     });
     });
@@ -30,9 +28,8 @@
             if (err)
                 res.json(err);
             else
-    //    	res.json(rows);
-    res.json({		result: encrypt(rows)	});
-    });
+                res.json({		result: encrypt(rows)	});
+});
     });
 
     router.get('/feriados/:mes/:ano', function(req, res) {
@@ -40,9 +37,8 @@
             if (err)
                 res.json(err);
             else
-    //      res.json(rows);
-    res.json({      result: encrypt(rows)   });
-    });
+                res.json({      result: encrypt(rows)   });
+});
     });
 
     router.get('/ultima_atualizacao', function(req, res) {
@@ -51,78 +47,57 @@
                 res.json(err);
             else
             //res.json(rows);
-        res.json({
-            result: encrypt(rows)
-        });
+                res.json({ result: encrypt(rows)   });
     });
     });
 
     router.get('/sumario/:id/:mes/:ano', function(req, res) {
-        console.log(req.params.id, req.params.mes, req.params.ano);
 
         pontodb.sumario(req.params.id, req.params.mes, req.params.ano, function(err, rows) {
             if (err)
                 res.json(err);
             else
-            //	res.json(rows);
-        res.json({
-            result: encrypt(rows)
+                res.json({ result: encrypt(rows)
         });
     });
     });
 
     router.get('/legendas/:id/:mes/:ano', function(req, res) {
-        console.log('legendas', req.params.id, req.params.mes, req.params.ano);
-
         pontodb.legendas(req.params.id, req.params.mes, req.params.ano, function(err, rows) {
             if (err)
                 res.json(err);
             else
-                res.json(rows);
-        //res.json({	result: encrypt(rows)	});
+                res.json({	result: encrypt(rows)	});
     });
     });
 
     router.get('/departamento/:id/:mes/:ano', function(req, res) {
-        console.log(req.params.id, req.params.mes, req.params.ano);
-
         pontodb.departamento(req.params.id, req.params.mes, req.params.ano, function(err, rows) {
             if (err)
                 res.json(err);
             else
-            //res.json(rows);
-        res.json({
-            result: encrypt(rows)
-        });
+                res.json({  result: encrypt(rows)  });
     });
     });
-  
+
     //-------------------------Horarios dos servidor--------------------------------
     router.get('/horarios/:siape', function(req, res) {
         pontodb.horarios(req.params.siape, function(err, rows) {
             if (err)
                 res.json(err);
             else
-                //res.json(rows);
                 res.json({result: encrypt(rows)	});
-            });
+        });
     });
 
     //-------------------------Verifica a Existencia de terceira entrada e retorna a quantidade --------------------------------
     router.get('/terceiraentrada/:id/:mes/:ano', function(req, res) {
-        console.log(req.params.id, req.params.mes, req.params.ano);
-
         pontodb.terceiraEntrada(req.params.id, req.params.mes, req.params.ano, function(err, rows) {
             if (err)
-                res.json(err);
+               res.json(err);
             else
-
-
-                console.log("aqui");
-       //   res.json(rows);
-         
-       res.json({           result: encrypt(rows)        });
-    });
+               res.json({result: encrypt(rows) });
+   });
     });
 
 
@@ -132,8 +107,7 @@
             if (err)
                 res.json(err);
             else
-                //res.json(rows);
-            res.json({result: encrypt(rows)	});
+               res.json({result: encrypt(rows)	});
         });
     });
 
@@ -142,15 +116,9 @@
         pontodb.chefiaDados(req.params.usuario, function(err, rows) {
             if (err)
                 res.json(err);
-            else{
-            //	console.log(rows);
-            //				res.json(rows);
-            res.json({result: encrypt(rows)	});
-
-        }
-
-
-    });
+            else
+                res.json({result: encrypt(rows)	});
+            });
     });
 
     //----------------------------Lista de Funcionarios por Departamento-----------------------------------
@@ -159,62 +127,48 @@
             if (err)
                 res.json(err);
             else{
-            //	console.log(rows);
-            //				res.json(rows);
-            res.json({result: encrypt(rows)	});
-
-        }
-
-
-    });
+                res.json({result: encrypt(rows)	});
+            }
+        });
     });
 
     //-----------------------------Ocorrecias Por Setor e  por  pessoa -----------------------------
     router.get('/ocorrencias/:mes/:ano/:departamento/:siape', function(req, res) {
         pontodb.ocorrencias(req.params.mes,req.params.ano,req.params.departamento,req.params.siape, function(err, rows) {
             if (err){
-                console.log('ERRO!')
                 res.json(err);
             }
             else
             {
-                //console.log(rows);
                 res.json({result: encrypt(rows)	});
-            //	res.json(rows);
-        }
+            }
 
-    });
+        });
     });
 
     //-----------------------------Dias Trabalhandos e Nao  trabalhos por pessoa -----------------------------
     router.get('/diasTrabalhados/:mes/:ano/:departamento/:siape', function(req, res) {
         pontodb.diasTrabalhados(req.params.mes,req.params.ano,req.params.departamento,req.params.siape, function(err, rows) {
             if (err){
-                console.log('ERRO!')
                 res.json(err);
             }
             else
             {
-                //console.log(rows);
                 res.json({result: encrypt(rows)	});
-            //res.json(rows);
-        }
+            }
 
-    });
+        });
     });
 
     //-----------------------------Dias de Ocorrecias por  pessoa -----------------------------
     router.get('/diasOcorrencias/:mes/:ano/:departamento/:siape/:ocorrencia', function(req, res) {
         pontodb.diasOcorrencias(req.params.mes,req.params.ano,req.params.departamento,req.params.siape,req.params.ocorrencia, function(err, rows) {
             if (err){
-                console.log('ERRO!')
                 res.json(err);
             }
             else
             {
-                console.log(rows);
                 res.json({result: encrypt(rows)	});
-            //	res.json(rows);
         }
 
     });
