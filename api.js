@@ -29,7 +29,7 @@
                 res.json(err);
             else
                 res.json({		result: encrypt(rows)	});
-});
+    });
     });
 
     router.get('/feriados/:mes/:ano', function(req, res) {
@@ -38,7 +38,7 @@
                 res.json(err);
             else
                 res.json({      result: encrypt(rows)   });
-});
+    });
     });
 
     router.get('/ultima_atualizacao', function(req, res) {
@@ -97,9 +97,8 @@
                res.json(err);
             else
                res.json({result: encrypt(rows) });
-   });
     });
-
+    });
 
     //--------------------------Verifica se e um chefe------------------------------
     router.get('/chefia/:usuario', function(req, res) {
@@ -170,7 +169,6 @@
             {
                 res.json({result: encrypt(rows)	});
         }
-
     });
     });
     //-------------------------------------------------------------------------------

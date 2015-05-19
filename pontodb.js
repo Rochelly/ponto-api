@@ -463,8 +463,7 @@ legendas: function (siape, mes, ano, callback) {
 	conn.execSql(req);
 },
 
-ultima_atualizacao: function (callback) 
-{
+ultima_atualizacao: function (callback) {
 	var ultima_atualizacao = "select CONVERT(nvarchar(10), ultima_execucao, 103) + ' ' + hora as ultima_atualizacao, id, tarefa, data, hora, resultado_execucao, ultima_execucao, lido from agenda_comunicacao where receber_registros = 'true' and ultima_execucao is not null and resultado_execucao = 'OK' order by ultima_execucao desc, hora desc";
 
 	this.query(ultima_atualizacao, function (err, rows) {
