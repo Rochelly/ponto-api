@@ -80,7 +80,7 @@
     });
     });
 
-    //-------------------------Horarios dos servidor--------------------------------
+//-------------------------Horarios dos servidor--------------------------------
     router.get('/horarios/:siape', function(req, res) {
         pontodb.horarios(req.params.siape, function(err, rows) {
             if (err)
