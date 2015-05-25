@@ -111,7 +111,7 @@ servidor: function (siape, callback) {
 
 horarios: function (siape, callback) {
 	var rows = [];
-	var sql ="SELECT  h.dia_semana, h.entrada1, h.saida1, h.entrada2, h.saida2, h.entrada3, h.saida3 from  funcionarios f  INNER JOIN horarios h on f.horario_num = h.numero where f.n_folha ='"+siape+"'";
+	var sql ="SELECT  h.dia_semana, h.entrada1, h.saida1, h.entrada2, h.saida2, h.entrada3, h.saida3 from  funcionarios f  INNER JOIN horarios h on f.horario_num = h.numero where f.n_folha ='"+siape+"' and h.folga = 'false'";
 
 	req = new tedious.Request(sql,
 		function (err, count) {
