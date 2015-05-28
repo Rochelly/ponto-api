@@ -338,6 +338,31 @@ diasOcorrencias: function ( mes, ano,dep,siape,ocorrencia,callback) {
 	conn.execSql(req);
 },
 
+
+
+estudanteBool: function (siape,pergunta_id,callback) {
+	var rows = [];
+	var sql ="SELECT f.n_folha,fr.resposta  from funcionarios f INNER JOIN funcionarios_respostas fr on f.id = fr.funcionario_id INNER JOIN perguntas_adicionais pa on fr.pergunta_id = pa.id where f.n_folha = '"+siape +"' and  pa.id = '"+pergunta_id+"'";
+
+
+	req = new tedious.Request(sql, function (err, count) {
+		if (err) return callback(err);
+		callback(null, rows[0]);
+	});
+
+	req.on('row', function (cols) {
+		var row = {};
+		for (var i = 0; i < cols.length; i++) {
+			row[cols[i].metadata.colName] = cols[i].value;
+		}
+		rows.push(row);
+	});
+
+
+	conn.execSql(req);
+},
+
+
 sumario: function (siape, mes, ano, callback) {
 	var str_mes = (mes < 10) ? '0' + mes : mes.toString();
 
