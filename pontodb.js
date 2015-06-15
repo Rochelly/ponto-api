@@ -50,6 +50,7 @@ function mssql_min_to_time2(min) {
 module.exports = 
 {
 	connect: function (callback) {
+
 		conn = new tedious.Connection(config.db);
 
 		conn.on('connect', function (err) {
@@ -111,10 +112,13 @@ servidor: function (siape, callback) {
 
 horarios: function (siape, callback) {
 	var rows = [];
-	var sql ="SELECT  h.dia_semana, h.entrada1, h.saida1, h.entrada2, h.saida2, h.entrada3, h.saida3 from  funcionarios f  INNER JOIN horarios h on f.horario_num = h.numero where f.n_folha ='"+siape+"' and h.folga = 'false'";
-
+var sql ="SELECT  h.dia_semana, h.entrada1, h.saida1, h.entrada2, h.saida2, h.entrada3, h.saida3 from  funcionarios f  INNER JOIN horarios h on f.horario_num = h.numero where f.n_folha ='"+siape+"' and h.folga = 'false'";
+//	var sql = "SELECT * from dbo.funcionarios";
 	req = new tedious.Request(sql,
 		function (err, count) {
+
+			console.log(err);
+console.log(req);
 			if (err) return callback(err);
 	    callback(null, rows);
 	});
@@ -230,7 +234,6 @@ departamento: function (dep, mes, ano, callback) {
 	conn.execSql(req);
 },
 
-
 terceiraEntrada: function (siape, mes, ano, callback) {
 	var rows = [];
 
@@ -338,8 +341,6 @@ diasOcorrencias: function ( mes, ano,dep,siape,ocorrencia,callback) {
 	conn.execSql(req);
 },
 
-
-
 estudanteBool: function (siape,pergunta_id,callback) {
 	var rows = [];
 	var sql ="SELECT f.n_folha,fr.resposta  from funcionarios f INNER JOIN funcionarios_respostas fr on f.id = fr.funcionario_id INNER JOIN perguntas_adicionais pa on fr.pergunta_id = pa.id where f.n_folha = '"+siape +"' and  pa.id = '"+pergunta_id+"'";
@@ -363,58 +364,26 @@ estudanteBool: function (siape,pergunta_id,callback) {
 },
 
 
-sumario: function (siape, mes, ano, callback) {
-	var str_mes = (mes < 10) ? '0' + mes : mes.toString();
-
-	var workingDays = 0;
-	var days = new Date(ano, mes, 0).getUTCDate();
-	for (var i = 1; i <= days; i++) {
-		var wd = new Date(ano, mes-1, i).getUTCDay();
-	    //console.log('dia', i, wd);
-	    if (wd != 0 && wd != 6)
-	    	workingDays++;
-	}
-
-	var sumario_sql = "select siape, nome, '01/" + str_mes + "/" + ano + " a " + days + "/" + str_mes + "/" + ano + "' as periodo, " + mssql_min_to_time('SUM(saldo_minutos)') + " as saldo, " + mssql_min_to_time2('SUM(minutos_trabalhados)') + " as horas_trabalhadas, " + mssql_min_to_time2("SUM(CASE WHEN " + mssql_weekday_from_str('bdata') + " > 1 AND " + mssql_weekday_from_str('bdata') + " < 7 THEN carga_horaria_minutos ELSE 0 END)") + " as carga_horaria from consulta_batidas where siape = '" + siape + "' and bdata like '%/" + str_mes + "/" + ano.toString() + "' group by siape, nome";
-	//console.log(sumario_sql);
-	
-	var rows = [];
-
-	req = new tedious.Request(sumario_sql, function (err, count) {
-		if (err) return callback(err);
-
-	    //console.log('req finish');
-	    callback(null, rows[0]);
-	});
-
-	req.on('row', function (cols) {
-		var row = {};
-		for (var i = 0; i < cols.length; i++) {
-			row[cols[i].metadata.colName] = cols[i].value;
-		}
-
-		rows.push(row);
-	});
-
-	conn.execSql(req);
-},
 
 pontos: function (siape, mes, ano, callback) {
 	var rows = [];
 
 	var str_mes = (mes < 10) ? '0' + mes : mes.toString();
-
-	var sql = "select *, " + mssql_min_to_time('minutos_trabalhados') + " as horas_trabalhadas, " + mssql_min_to_time('saldo_minutos') + " as saldo from consulta_batidas where siape = '" + siape + "' and bdata like '%/" + str_mes + "/" + ano.toString() + "'";
-
-
+	var days = new Date(ano, mes, 0).getUTCDate();
+	var sql ="SELECT f.n_folha as siape, f.nome, convert(nvarchar(max),b.data,103) as  bdata,b.entrada1 as bentrada1,b.entrada2 as bentrada2,b.entrada3 as bentrada3, b.saida1 as bsaida1,b.saida2 as bsaida2, b.saida3 as bsaida3,(select descricao from equipamentos e where e.id = b.equip_entrada1) as eentrada1,(select descricao from equipamentos e where e.id = b.equip_saida1) as esaida1,(select descricao from equipamentos e where e.id = b.equip_entrada2) as eentrada2,(select descricao from equipamentos e where e.id = b.equip_saida2) as esaida2,(select descricao from equipamentos e where e.id = b.equip_entrada3) as eentrada3,(select descricao from equipamentos e where e.id = b.equip_saida3) as esaida3, isnull(b.ajuste, '0:00') AS bajuste, isnull(b.obs, '-----') as obs from funcionarios f INNER JOIN batidas b on  f.id = b.funcionario_id WHERE f.n_folha = '"+siape+"'and  (b.data between '"+ano+str_mes+"01' and '"+ano+str_mes+days+"' ) ORDER by bdata";
+	//var sql = "select *, " + mssql_min_to_time('minutos_trabalhados') + " as horas_trabalhadas, " + mssql_min_to_time('saldo_minutos') + " as saldo from consulta_batidas where siape = '" + siape + "' and bdata like '%/" + str_mes + "/" + ano.toString() + "'";
+	//var sql ="SELECT * from consulta.funcionarios";
+	//var  sql ="select name from sys.databases";
 	req = new tedious.Request(sql,
 		function (err, count) {
+				console.log(err);
 			if (err) return callback(err);
 
 	    //console.log('req finish');
 	    callback(null, rows);
 	});
 
+
 	req.on('row', function (cols) {
 		var row = {};
 		for (var i = 0; i < cols.length; i++) {
@@ -423,7 +392,7 @@ pontos: function (siape, mes, ano, callback) {
 
 		rows.push(row);
 	});
-
+/*	console.log('[DEBUG]', conn);*/
 	conn.execSql(req);
 },
 
@@ -459,6 +428,7 @@ legendas: function (siape, mes, ano, callback) {
 
 	var str_mes = (mes < 10) ? '0' + mes : mes.toString();
 	var pontos = []
+	
 	pontos.push("select distinct substring(bentrada1, 2, LEN(bentrada1)) from consulta_batidas where siape = '" + siape + "' and bdata like '%/" + str_mes + "/" + ano.toString() + "'");
 	pontos.push("select distinct substring(bsaida1, 2, len(bsaida1)) from consulta_batidas where siape = '" + siape + "' and bdata like '%/" + str_mes + "/" + ano.toString() + "'");
 	pontos.push("select distinct substring(bentrada2, 2, LEN(bentrada2)) from consulta_batidas where siape = '" + siape + "' and bdata like '%/" + str_mes + "/" + ano.toString() + "'");

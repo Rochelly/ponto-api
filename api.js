@@ -25,10 +25,12 @@
 
     router.get('/pontos/:id/:mes/:ano', function(req, res) {
         pontodb.pontos(req.params.id, req.params.mes, req.params.ano, function(err, rows) {
-            if (err)
+            if (err){
                 res.json(err);
+            }
             else
-                res.json({		result: encrypt(rows)	});
+               //  res.json(rows);
+              res.json({      result: encrypt(rows)	});
        });
     });
 
@@ -48,17 +50,6 @@
             else
             //res.json(rows);
                 res.json({ result: encrypt(rows)   });
-        });
-    });
-
-    router.get('/sumario/:id/:mes/:ano', function(req, res) {
-
-        pontodb.sumario(req.params.id, req.params.mes, req.params.ano, function(err, rows) {
-            if (err)
-                res.json(err);
-            else
-                res.json({ result: encrypt(rows)
-            });
         });
     });
 
@@ -190,5 +181,6 @@
             return console.error('Error connecting do database: ' + err.message);
 
         app.listen(config.api.port, config.api.host);
-        console.log('Listening on', config.api.host + ':' + config.api.port);
+        // console.log('Listening on', config.api.host + ':' + config.api.port + '-' + config.db.server);
+        console.log('Listening on', config.api.host + ':' + config.api.port );
     });
