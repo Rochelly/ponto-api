@@ -181,7 +181,7 @@ chefiaDados: function (usuario, callback) {
 
 funcionariosDep: function (Departamento, callback) {
 	var rows = [];
-	var sql= "SELECT n_folha, nome from funcionarios WHERE departamento_id = '"+Departamento+"' ORDER by nome";
+	var sql= "SELECT n_folha, nome,convert(nvarchar(max),admissao,111)  as  data_admissao, convert(nvarchar(max),demissao,111)  as  data_demissao   from funcionarios WHERE departamento_id = '"+Departamento+"' ORDER by nome";
 	
 	req = new tedious.Request(sql,
 		function (err, count) {
