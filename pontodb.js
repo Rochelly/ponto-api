@@ -112,8 +112,8 @@ servidor: function (siape, callback) {
 
 horarios: function (siape, callback) {
 	var rows = [];
-var sql ="SELECT  h.dia_semana, h.entrada1, h.saida1, h.entrada2, h.saida2, h.entrada3, h.saida3 from  funcionarios f  INNER JOIN horarios h on f.horario_num = h.numero where f.n_folha ='"+siape+"' and h.folga = 'false'";
-//	var sql = "SELECT * from dbo.funcionarios";
+	var sql ="SELECT  h.dia_semana, h.entrada1, h.saida1, h.entrada2, h.saida2, h.entrada3, h.saida3 from  funcionarios f  INNER JOIN horarios h on f.horario_num = h.numero where f.n_folha ='"+siape+"' and h.folga = 'false'";
+	//	var sql = "SELECT * from dbo.funcionarios";
 	req = new tedious.Request(sql,
 		function (err, count) {
 
@@ -138,7 +138,7 @@ var sql ="SELECT  h.dia_semana, h.entrada1, h.saida1, h.entrada2, h.saida2, h.en
 
 chefia: function (usuario, callback) {
 	var rows = [];
-	var sql ="SELECT u.nome, d.id as departamento_id, d.descricao  FROM usuarios u INNER JOIN usuarios_departamentos ud on u.id = ud.usuario_id INNER JOIN departamentos d on ud.departamento_id = d.id  where u.nome LIKE '%"+usuario+"%' and u.desativado = 'FALSE' and u.bloqueado = 'FALSE'";
+	var sql ="SELECT u.nome, d.id as departamento_id, d.descricao  FROM usuarios u INNER JOIN usuarios_departamentos ud on u.id = ud.usuario_id INNER JOIN departamentos d on ud.departamento_id = d.id  where u.nome LIKE '%"+usuario+"%' and u.desativado = 'FALSE' and u.bloqueado = 'FALSE' order by d.descricao";
 	
 		req = new tedious.Request(sql,
 		function (err, count) {
@@ -157,6 +157,48 @@ chefia: function (usuario, callback) {
 
 	conn.execSql(req);
 },
+
+departamentosAll: function (callback) {
+	var rows = [];
+	var sql ="SELECT  DISTINCT d.id as departamento_id, d.descricao  FROM usuarios u INNER JOIN usuarios_departamentos ud on u.id = ud.usuario_id INNER JOIN departamentos d on ud.departamento_id = d.id order by d.descricao";
+	    req = new tedious.Request(sql,
+		function (err, count) {
+			if (err) return callback(err);
+	    callback(null, rows);
+	});
+
+	req.on('row', function (cols) {
+		var row = {};
+		for (var i = 0; i < cols.length; i++) {
+			row[cols[i].metadata.colName] = cols[i].value;
+		}
+
+		rows.push(row);
+	});
+
+	conn.execSql(req);
+},
+
+funcionariosListAll: function (callback) {
+	var rows = [];
+	var sql ="SELECT n_folha as siape,nome  FROM funcionarios order by nome";
+	    req = new tedious.Request(sql,
+
+	function (err, count) {
+			if (err) return callback(err);
+	    callback(null, rows);
+	});
+
+	req.on('row', function (cols) {
+		var row = {};
+		for (var i = 0; i < cols.length; i++) {
+			row[cols[i].metadata.colName] = cols[i].value;
+		}
+		rows.push(row);
+	});
+	conn.execSql(req);
+},
+
 
 chefiaDados: function (usuario, callback) {
 	var rows = [];
@@ -364,8 +406,6 @@ estudanteBool: function (siape,pergunta_id,callback) {
 	conn.execSql(req);
 },
 
-
-
 pontos: function (siape, mes, ano, callback) {
 	var rows = [];
 
@@ -393,7 +433,7 @@ pontos: function (siape, mes, ano, callback) {
 
 		rows.push(row);
 	});
-/*	console.log('[DEBUG]', conn);*/
+	/*	console.log('[DEBUG]', conn);*/
 	conn.execSql(req);
 },
 
