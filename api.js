@@ -24,6 +24,7 @@
             });
         });
     });
+
     router.get('/pontos/:id/:mes/:ano', function(req, res) {
         pontodb.pontos(req.params.id, req.params.mes, req.params.ano, function(err, rows) {
             if (err) {
