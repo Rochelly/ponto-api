@@ -35,8 +35,8 @@
             } else
             //  res.json(rows);
                 res.json({
-                result: encrypt(rows)
-            });
+                    result: encrypt(rows)
+                });
         });
     });
 
@@ -59,8 +59,8 @@
             } else
             //res.json(rows);
                 res.json({
-                result: encrypt(rows)
-            });
+                    result: encrypt(rows)
+                });
         });
     });
 
@@ -140,8 +140,7 @@
             if (err) {
                 throw err;
                 res.json(err);
-            } else res.json({
-                result: encrypt(rows)
+            } else res.json({  result: encrypt(rows)
             });
         });
     });
